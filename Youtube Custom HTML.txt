@@ -1,0 +1,82 @@
+<script type="text/javascript">
+// OPTIONAL: Enable JSAPI if it's not already on the URL
+// note: this will cause the Youtube player to "flash" on the page when reloading to enable the JS API
+for (var e = document.getElementsByTagName("iframe"), x = e.length; x--;)
+  if (/youtube.com\/embed/.test(e[x].src))
+     if(e[x].src.indexOf('enablejsapi=') === -1)
+        e[x].src += (e[x].src.indexOf('?') ===-1 ? '?':'&') + 'enablejsapi=1';
+
+var gtmYTListeners = []; // support multiple players on the same page
+// attach our YT listener once the API is loaded
+function onYouTubeIframeAPIReady() {
+    for (var e = document.getElementsByTagName("iframe"), x = e.length; x--;) {
+        if (/youtube.com\/embed/.test(e[x].src)) {
+            gtmYTListeners.push(new YT.Player(e[x], {
+                events: {
+                    onStateChange: onPlayerStateChange,
+                    onError: onPlayerError
+                }
+            }));
+            YT.gtmLastAction = "p";
+        }
+    }
+}
+
+// listen for play/pause, other states such as rewind and end could also be added
+// also report % played every second
+function onPlayerStateChange(e) {
+    e["data"] == YT.PlayerState.PLAYING && setTimeout(onPlayerPercent, 1000, e["target"]);
+    var video_data = e.target["getVideoData"](),
+        youTubeLabel = video_data.video_id+':'+video_data.title;
+    if (e["data"] == YT.PlayerState.PLAYING && YT.gtmLastAction == "p") {
+        dataLayer.push({
+            event: "youtube",
+            youtubeaction: "play",
+            youtubelabel: youTubeLabel
+        });
+        YT.gtmLastAction = "";
+    }
+    if (e["data"] == YT.PlayerState.PAUSED) {
+        dataLayer.push({
+            event: "youtube",
+            action: "pause",
+            youtubelabel: youTubeLabel
+        });
+        YT.gtmLastAction = "p";
+    }
+}
+
+// catch all to report errors through the GTM data layer
+// once the error is exposed to GTM, it can be tracked in UA as an event!
+function onPlayerError(e) {
+    dataLayer.push({
+        event: "error",
+        youtubeaction: "GTM",
+        youtubelabel: "youtube:" + e["target"]["src"] + "-" + e["data"]
+    })
+}
+
+// report the % played if it matches 0%, 25%, 50%, 75% or completed
+function onPlayerPercent(e) {
+    if (e["getPlayerState"]() == YT.PlayerState.PLAYING) {
+        var t = e["getDuration"]() - e["getCurrentTime"]() <= 1.5 ? 1 : (Math.floor(e["getCurrentTime"]() / e["getDuration"]() * 4) / 4).toFixed(2);         if (!e["lastP"] || t > e["lastP"]) {
+            var video_data = e["getVideoData"]();
+                label: youTubeLabel = video_data.video_id+':'+video_data.title;
+            e["lastP"] = t;
+            dataLayer.push({
+                event: "youtube",
+                youtubeaction: t * 100 + "%",
+                youtubelabel: youTubeLabel 
+            })
+        }
+        e["lastP"] != 1 && setTimeout(onPlayerPercent, 1000, e);
+    }
+}
+
+// load the Youtube JS api and get going
+var j = document.createElement("script"),
+    f = document.getElementsByTagName("script")[0];
+j.src = "//www.youtube.com/iframe_api";
+j.async = true;
+f.parentNode.insertBefore(j, f);
+</script>
