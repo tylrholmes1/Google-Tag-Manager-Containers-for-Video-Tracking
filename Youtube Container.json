@@ -1,0 +1,284 @@
+{
+  "exportFormatVersion": 1.3,
+  "exportTime": "2015-01-07 00:22:12",
+  "containerVersion": {
+    "accountId": "30449707",
+    "containerId": "936998",
+    "containerVersionId": "0",
+    "deleted": false,
+    "container": {
+      "accountId": "30449707",
+      "containerId": "936998",
+      "name": "YouTube Only",
+      "publicId": "GTM-W2ZNP6",
+      "timeZoneCountryId": "US",
+      "timeZoneId": "America/Los_Angeles",
+      "notes": "",
+      "usageContext": [
+        "WEB"
+      ],
+      "fingerprint": "1420589166362",
+      "enabledBuiltInVariable": [
+        "FORM_ID",
+        "REFERRER",
+        "OLD_HISTORY_STATE",
+        "CLICK_CLASSES",
+        "NEW_HISTORY_STATE",
+        "PAGE_URL",
+        "CLICK_ID",
+        "FORM_URL",
+        "CLICK_URL",
+        "CLICK_ELEMENT",
+        "HISTORY_SOURCE",
+        "FORM_TEXT",
+        "PAGE_HOSTNAME",
+        "FORM_ELEMENT",
+        "FORM_TARGET",
+        "PAGE_PATH",
+        "EVENT",
+        "NEW_HISTORY_FRAGMENT",
+        "CLICK_TARGET",
+        "FORM_CLASSES",
+        "CLICK_TEXT",
+        "OLD_HISTORY_FRAGMENT"
+      ]
+    },
+    "tag": [
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "tagId": "3",
+        "name": "Youtube Event",
+        "type": "ua",
+        "liveOnly": false,
+        "parameter": [
+          {
+            "type": "BOOLEAN",
+            "key": "enableEcommerce",
+            "value": "false"
+          },
+          {
+            "type": "BOOLEAN",
+            "key": "doubleClick",
+            "value": "true"
+          },
+          {
+            "type": "BOOLEAN",
+            "key": "useDebugVersion",
+            "value": "false"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "trackingId",
+            "value": "{{UPDATE YOUR UA}}"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "trackType",
+            "value": "TRACK_EVENT"
+          },
+          {
+            "type": "BOOLEAN",
+            "key": "nonInteraction",
+            "value": "false"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "eventLabel",
+            "value": "{{Youtube Label}}"
+          },
+          {
+            "type": "BOOLEAN",
+            "key": "enableLinkId",
+            "value": "false"
+          },
+          {
+            "type": "BOOLEAN",
+            "key": "anonymizeIp",
+            "value": "false"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "eventAction",
+            "value": "{{Youtube Action}}"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "eventCategory",
+            "value": "{{Event}}"
+          }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": [
+          "3"
+        ]
+      },
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "tagId": "4",
+        "name": "Youtube Video Script",
+        "type": "html",
+        "liveOnly": false,
+        "parameter": [
+          {
+            "type": "BOOLEAN",
+            "key": "supportDocumentWrite",
+            "value": "true"
+          },
+          {
+            "type": "TEMPLATE",
+            "key": "html",
+            "value": "<script type=\"text/javascript\">\n// OPTIONAL: Enable JSAPI if it's not already on the URL\n// note: this will cause the Youtube player to \"flash\" on the page when reloading to enable the JS API\nfor (var e = document.getElementsByTagName(\"iframe\"), x = e.length; x--;)\n  if (/youtube.com\\/embed/.test(e[x].src))\n     if(e[x].src.indexOf('enablejsapi=') === -1)\n        e[x].src += (e[x].src.indexOf('?') ===-1 ? '?':'&') + 'enablejsapi=1';\n\nvar gtmYTListeners = []; // support multiple players on the same page\n// attach our YT listener once the API is loaded\nfunction onYouTubeIframeAPIReady() {\n    for (var e = document.getElementsByTagName(\"iframe\"), x = e.length; x--;) {\n        if (/youtube.com\\/embed/.test(e[x].src)) {\n            gtmYTListeners.push(new YT.Player(e[x], {\n                events: {\n                    onStateChange: onPlayerStateChange,\n                    onError: onPlayerError\n                }\n            }));\n            YT.gtmLastAction = \"p\";\n        }\n    }\n}\n\n// listen for play/pause, other states such as rewind and end could also be added\n// also report % played every second\nfunction onPlayerStateChange(e) {\n    e[\"data\"] == YT.PlayerState.PLAYING && setTimeout(onPlayerPercent, 1000, e[\"target\"]);\n    var video_data = e.target[\"getVideoData\"](),\n        youTubeLabel = video_data.video_id+':'+video_data.title;\n    if (e[\"data\"] == YT.PlayerState.PLAYING && YT.gtmLastAction == \"p\") {\n        dataLayer.push({\n            event: \"youtube\",\n            youtubeaction: \"play\",\n            youtubelabel: youTubeLabel\n        });\n        YT.gtmLastAction = \"\";\n    }\n    if (e[\"data\"] == YT.PlayerState.PAUSED) {\n        dataLayer.push({\n            event: \"youtube\",\n            action: \"pause\",\n            youtubelabel: youTubeLabel\n        });\n        YT.gtmLastAction = \"p\";\n    }\n}\n\n// catch all to report errors through the GTM data layer\n// once the error is exposed to GTM, it can be tracked in UA as an event!\nfunction onPlayerError(e) {\n    dataLayer.push({\n        event: \"error\",\n        youtubeaction: \"GTM\",\n        youtubelabel: \"youtube:\" + e[\"target\"][\"src\"] + \"-\" + e[\"data\"]\n    })\n}\n\n// report the % played if it matches 0%, 25%, 50%, 75% or completed\nfunction onPlayerPercent(e) {\n    if (e[\"getPlayerState\"]() == YT.PlayerState.PLAYING) {\n        var t = e[\"getDuration\"]() - e[\"getCurrentTime\"]() <= 1.5 ? 1 : (Math.floor(e[\"getCurrentTime\"]() / e[\"getDuration\"]() * 4) / 4).toFixed(2);         if (!e[\"lastP\"] || t > e[\"lastP\"]) {\n            var video_data = e[\"getVideoData\"]();\n                label: youTubeLabel = video_data.video_id+':'+video_data.title;\n            e[\"lastP\"] = t;\n            dataLayer.push({\n                event: \"youtube\",\n                youtubeaction: t * 100 + \"%\",\n                youtubelabel: youTubeLabel \n            })\n        }\n        e[\"lastP\"] != 1 && setTimeout(onPlayerPercent, 1000, e);\n    }\n}\n\n// load the Youtube JS api and get going\nvar j = document.createElement(\"script\"),\n    f = document.getElementsByTagName(\"script\")[0];\nj.src = \"//www.youtube.com/iframe_api\";\nj.async = true;\nf.parentNode.insertBefore(j, f);\n</script>"
+          }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": [
+          "4"
+        ]
+      }
+    ],
+    "fingerprint": "0",
+    "trigger": [
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "triggerId": "3",
+        "name": "Youtube Event",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {
+                "type": "TEMPLATE",
+                "key": "arg0",
+                "value": "{{_event}}"
+              },
+              {
+                "type": "TEMPLATE",
+                "key": "arg1",
+                "value": "Youtube Event"
+              }
+            ]
+          }
+        ],
+        "filter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {
+                "type": "TEMPLATE",
+                "key": "arg0",
+                "value": "{{Event}}"
+              },
+              {
+                "type": "TEMPLATE",
+                "key": "arg1",
+                "value": "youtube"
+              }
+            ]
+          }
+        ],
+        "fingerprint": "0"
+      },
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "triggerId": "4",
+        "name": "Youtube Video Loaded",
+        "type": "DOM_READY",
+        "filter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              {
+                "type": "TEMPLATE",
+                "key": "arg0",
+                "value": "{{Is Youtube Present}}"
+              },
+              {
+                "type": "TEMPLATE",
+                "key": "arg1",
+                "value": "true"
+              }
+            ]
+          }
+        ],
+        "fingerprint": "0"
+      }
+    ],
+    "variable": [
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "variableId": "5",
+        "name": "Is Youtube Present",
+        "type": "jsm",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "javascript",
+            "value": "function () {\n    for (var e = document.getElementsByTagName('iframe'), x = e.length; x--;)\n        if (/youtube.com\\/embed/.test(e[x].src)) return true;\n    return false;\n}"
+          }
+        ],
+        "fingerprint": "0"
+      },
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "variableId": "6",
+        "name": "UPDATE YOUR UA",
+        "type": "c",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "value",
+            "value": "UA-XXXXXXXX-X"
+          }
+        ],
+        "fingerprint": "0"
+      },
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "variableId": "7",
+        "name": "Youtube Action",
+        "type": "v",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "name",
+            "value": "youtubeaction"
+          },
+          {
+            "type": "INTEGER",
+            "key": "dataLayerVersion",
+            "value": "2"
+          }
+        ],
+        "fingerprint": "0"
+      },
+      {
+        "accountId": "30449707",
+        "containerId": "936998",
+        "variableId": "8",
+        "name": "Youtube Label",
+        "type": "v",
+        "parameter": [
+          {
+            "type": "TEMPLATE",
+            "key": "name",
+            "value": "youtubelabel"
+          },
+          {
+            "type": "INTEGER",
+            "key": "dataLayerVersion",
+            "value": "2"
+          }
+        ],
+        "fingerprint": "0"
+      }
+    ]
+  }
+}
