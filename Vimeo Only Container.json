@@ -1,0 +1,287 @@
+{
+    "exportFormatVersion": 1.3,
+    "exportTime": "2015-02-05 00:11:05",
+    "containerVersion": {
+        "accountId": "30449707",
+        "containerId": "1003041",
+        "containerVersionId": "0",
+        "deleted": false,
+        "container": {
+            "accountId": "30449707",
+            "containerId": "1003041",
+            "name": "Vimeo Only",
+            "publicId": "GTM-M7S5V5",
+            "timeZoneCountryId": "US",
+            "timeZoneId": "America/Los_Angeles",
+            "notes": "",
+            "usageContext": [
+                "WEB"
+            ],
+            "fingerprint": "1423095006120",
+            "enabledBuiltInVariable": [
+                "FORM_URL",
+                "FORM_ELEMENT",
+                "FORM_CLASSES",
+                "CLICK_ELEMENT",
+                "CLICK_URL",
+                "FORM_ID",
+                "OLD_HISTORY_STATE",
+                "CLICK_ID",
+                "PAGE_URL",
+                "CLICK_CLASSES",
+                "NEW_HISTORY_STATE",
+                "EVENT",
+                "HISTORY_SOURCE",
+                "PAGE_HOSTNAME",
+                "OLD_HISTORY_FRAGMENT",
+                "PAGE_PATH",
+                "CLICK_TEXT",
+                "CLICK_TARGET",
+                "FORM_TEXT",
+                "NEW_HISTORY_FRAGMENT",
+                "FORM_TARGET",
+                "REFERRER"
+            ]
+        },
+        "tag": [
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "tagId": "9",
+                "name": "Vimeo Event",
+                "type": "ua",
+                "liveOnly": false,
+                "parameter": [
+                    {
+                        "type": "BOOLEAN",
+                        "key": "enableEcommerce",
+                        "value": "false"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "useDebugVersion",
+                        "value": "false"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "doubleClick",
+                        "value": "true"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "trackingId",
+                        "value": "{{Fake UA}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "trackType",
+                        "value": "TRACK_EVENT"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "nonInteraction",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventLabel",
+                        "value": "{{Vimeo Label}}"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "enableLinkId",
+                        "value": "false"
+                    },
+                    {
+                        "type": "BOOLEAN",
+                        "key": "anonymizeIp",
+                        "value": "false"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventCategory",
+                        "value": "{{Vimeo Category}}"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "eventAction",
+                        "value": "{{Vimeo Action}}"
+                    }
+                ],
+                "fingerprint": "0",
+                "firingTriggerId": [
+                    "9"
+                ]
+            },
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "tagId": "10",
+                "name": "Vimeo Video Script",
+                "type": "html",
+                "liveOnly": false,
+                "parameter": [
+                    {
+                        "type": "BOOLEAN",
+                        "key": "supportDocumentWrite",
+                        "value": "true"
+                    },
+                    {
+                        "type": "TEMPLATE",
+                        "key": "html",
+                        "value": "(function($) {\n  \"use strict\";\n\n  // Check for iframe\n  if (!$('#vimeo-player').length) {\n    // console.info('iframe not available');\n    return;\n  }\n\n  var f = $('#vimeo-player'),\n      url = f.attr('src').split('?')[0],      // Source URL\n      protocol = document.URL.split(':')[0],  // Domain protocol (http or https)\n      trackProgress = f.data('progress'),     // Data attribute to enable progress tracking\n      trackSeeking = f.data('seek'),          // Data attribute to enable seek tracking\n      gaTracker,\n      progress25 = false,\n      progress50 = false,\n      progress75 = false,\n      videoPlayed = false,\n      videoPaused = false,\n      videoResumed = false,\n      videoSeeking = false,\n      videoCompleted = false,\n      timePercentComplete = 0;\n\n  // Match protocol with what is in document.URL\n  if (url.match(/^http/) === null) {\n    url = protocol + ':' + url;\n  }\n\n  // Check which version of Google Analytics is used\n\n  // Universal Analytics (universal.js)\n  if (typeof ga === \"function\") {\n    gaTracker = 'ua';\n    // console.info('Universal Analytics');\n  }\n\n  // Classic Analytics (ga.js)\n  if (typeof _gaq !== \"undefined\" && typeof _gaq.push === \"function\") {\n    gaTracker = 'ga';\n    // console.info('Classic Analytics');\n  }\n\n  // Google Tag Manager (dataLayer)\n  if (typeof dataLayer !== \"undefined\" && typeof dataLayer.push === \"function\") {\n    gaTracker = 'gtm';\n    // console.info('Google Tag Manager');\n  }\n\n  // Listen for messages from the player\n  if (window.addEventListener) {\n    window.addEventListener('message', onMessageReceived, false);\n  } else {\n    window.attachEvent('onmessage', onMessageReceived, false);\n  }\n\n  // Send event to Classic Analytics, Universal Analytics or Google Tag Manager\n  function sendEvent(action) {\n    switch (gaTracker) {\n    case 'gtm':\n      dataLayer.push({\n        'event' : 'Vimeo',\n        'eventCategory' : 'Vimeo',\n        'eventAction' : action,\n        'eventLabel' : url,\n        'eventValue' : undefined,\n        'eventNonInteraction' : true\n      });\n      break;\n    case 'ua':\n      ga('send', 'event', 'Vimeo', action, url, undefined, {\n        \"nonInteraction\" : 1\n      });\n      break;\n    case 'ga':\n      _gaq.push(['_trackEvent', 'Vimeo', action, url, undefined, true]);\n      break;\n    }\n  }\n\n  // Handle messages received from the player\n  function onMessageReceived(e) {\n    if (e.origin.replace('https:', 'http:') !== \"http://player.vimeo.com\" || typeof gaTracker === 'undefined') {\n      // console.warn('Tracker is missing!');\n      return;\n    }\n    var data = JSON.parse(e.data);\n\n    switch (data.event) {\n    case 'ready':\n      onReady();\n      break;\n\n    case 'playProgress':\n      onPlayProgress(data.data);\n      break;\n\n    case 'seek':\n      if (trackSeeking && !videoSeeking) {\n        sendEvent('Skipped video forward or backward');\n        videoSeeking = true; // Avoid subsequent seek trackings\n      }\n      break;\n\n    case 'play':\n      if (!videoPlayed) {\n        sendEvent('Started video');\n        videoPlayed = true; // Avoid subsequent play trackings\n      } else if (!videoResumed && videoPaused) {\n        sendEvent('Resumed video');\n        videoResumed = true; // Avoid subsequent resume trackings\n      }\n      break;\n\n    case 'pause':\n      onPause();\n      break;\n\n    case 'finish':\n      if (!videoCompleted) {\n        sendEvent('Completed video');\n        videoCompleted = true; // Avoid subsequent finish trackings\n      }\n      break;\n    }\n  }\n\n  // Helper function for sending a message to the player\n  function post(action, value) {\n    var data = {\n      method: action\n    };\n\n    if (value) {\n      data.value = value;\n    }\n\n    f[0].contentWindow.postMessage(JSON.stringify(data), url);\n  }\n\n  function onReady() {\n    post('addEventListener', 'play');\n    post('addEventListener', 'seek');\n    post('addEventListener', 'pause');\n    post('addEventListener', 'finish');\n    post('addEventListener', 'playProgress');\n  }\n\n  function onPause() {\n    if (timePercentComplete < 99 && !videoPaused) {\n      sendEvent('Paused video');\n      videoPaused = true; // Avoid subsequent pause trackings\n    }\n  }\n\n  // Tracking video progress\n  function onPlayProgress(data) {\n    timePercentComplete = Math.round((data.percent) * 100); // Round to a whole number\n\n    if (!trackProgress) {\n      return;\n    }\n\n    var progress;\n\n    if (timePercentComplete > 24 && !progress25) {\n      progress = 'Played video: 25%';\n      progress25 = true;\n    }\n\n    if (timePercentComplete > 49 && !progress50) {\n      progress = 'Played video: 50%';\n      progress50 = true;\n    }\n\n    if (timePercentComplete > 74 && !progress75) {\n      progress = 'Played video: 75%';\n      progress75 = true;\n    }\n\n    if (progress) {\n      sendEvent(progress);\n    }\n  }\n\n})(jQuery);"
+                    }
+                ],
+                "fingerprint": "0",
+                "firingTriggerId": [
+                    "10"
+                ]
+            }
+        ],
+        "fingerprint": "0",
+        "trigger": [
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "triggerId": "9",
+                "name": "Vimeo Action",
+                "type": "CUSTOM_EVENT",
+                "customEventFilter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{_event}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "Vimeo"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "0"
+            },
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "triggerId": "10",
+                "name": "Vimeo Video Loaded",
+                "type": "DOM_READY",
+                "filter": [
+                    {
+                        "type": "EQUALS",
+                        "parameter": [
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg0",
+                                "value": "{{Is Vimeo Video Present}}"
+                            },
+                            {
+                                "type": "TEMPLATE",
+                                "key": "arg1",
+                                "value": "true"
+                            }
+                        ]
+                    }
+                ],
+                "fingerprint": "0"
+            }
+        ],
+        "variable": [
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "variableId": "16",
+                "name": "Fake UA",
+                "type": "c",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "value",
+                        "value": "X"
+                    }
+                ],
+                "fingerprint": "0"
+            },
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "variableId": "14",
+                "name": "Is Vimeo Video Present",
+                "type": "jsm",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "javascript",
+                        "value": "function () {\n    for (var e = document.getElementsByTagName('iframe'), x = e.length; x--;)\n        if (/player.vimeo.com\\/embed/.test(e[x].src)) return true;\n    return false;\n}"
+                    }
+                ],
+                "fingerprint": "0"
+            },
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "variableId": "20",
+                "name": "Vimeo Action",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "eventAction"
+                    },
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    }
+                ],
+                "fingerprint": "0"
+            },
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "variableId": "21",
+                "name": "Vimeo Category",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "eventCategory"
+                    },
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    }
+                ],
+                "fingerprint": "0"
+            },
+            {
+                "accountId": "30449707",
+                "containerId": "1003041",
+                "variableId": "22",
+                "name": "Vimeo Label",
+                "type": "v",
+                "parameter": [
+                    {
+                        "type": "TEMPLATE",
+                        "key": "name",
+                        "value": "eventLabel"
+                    },
+                    {
+                        "type": "INTEGER",
+                        "key": "dataLayerVersion",
+                        "value": "2"
+                    }
+                ],
+                "fingerprint": "0"
+            }
+        ]
+    }
+}
